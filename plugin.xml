@@ -14,6 +14,8 @@
         <clobbers target="light.map" />
     </js-module>
     
+    <preference name="ACCESS_KEY" />
+    
     <!-- android -->
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
@@ -23,7 +25,7 @@
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/*/application">
-            <meta-data android:name="com.baidu.lbsapi.API_KEY" android:value="开发密钥"></meta-data>  
+            <meta-data android:name="com.baidu.lbsapi.API_KEY" android:value="$ACCESS_KEY"></meta-data>  
         </config-file>
         
         <config-file target="AndroidManifest.xml" parent="/*">
@@ -40,18 +42,18 @@
             <uses-permission android:name="android.permission.CALL_PHONE"></uses-permission>
             <!-- 使用定位功能所需权限,demo已集成百度定位SDK,不使用定位功能可去掉以下6项 -->
             <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
-            <permission android:name="android.permission.BAIDU_LOCATION_SERVICE"></permission>
-            <uses-permission android:name="android.permission.BAIDU_LOCATION_SERVICE"></uses-permission>
             <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
             <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"></uses-permission>
             <uses-permission android:name="android.permission.ACCESS_GPS"></uses-permission>
         </config-file>
 
         <source-file src="src/android/BaiduMap.java" target-dir="src/com/baidu/light/map" />
-        <source-file src="src/android/libs/baidumapapi_v2_4_1.jar" target-dir="libs" />
-        <source-file src="src/android/libs/locSDK_3.1.jar" target-dir="libs" />
-        <source-file src="src/android/libs/armeabi/libBaiduMapSDK_v2_4_1.so" target-dir="libs/armeabi" />
-        <source-file src="src/android/libs/armeabi/liblocSDK3.so" target-dir="libs/armeabi" />
+        <source-file src="src/android/libs/baidumapapi_v3_5_0.jar" target-dir="libs" />
+        <source-file src="src/android/libs/armeabi/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/armeabi" />
+        <source-file src="src/android/libs/arm64-v8a/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/arm64-v8a" />
+        <source-file src="src/android/libs/armeabi-v7a/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/armeabi-v7a" />
+        <source-file src="src/android/libs/x86/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/x86" />
+        <source-file src="src/android/libs/x86_64/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/x86_64" />
     </platform>
 
 </plugin>

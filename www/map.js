@@ -8,11 +8,19 @@ var baidumap = baidumap || {};
  * @param{Object} options 配置项
  * @param{Function} callback 回调
  */
-function init(options, callback) {
+baidumap.init = function(options, callback) {
 	exec(callback, function() {
 	}, 'BaiduMap', 'init', [options]);
 };
 
-baidumap.init = init;
+baidumap.setCenter = function(options, callback) {
+	exec(callback, function() {
+	}, 'BaiduMap', 'setCenter', [options]);
+};
+
+baidumap.setZoom = function(options, callback) {
+	exec(callback, function() {
+	}, 'BaiduMap', 'setZoom', [options]);
+};
 
 module.exports = baidumap;
