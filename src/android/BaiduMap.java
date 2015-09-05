@@ -197,7 +197,7 @@ public class BaiduMap extends CordovaPlugin {
 				new LatLng(longitude, latitude)).icon(icon));
 	}
 	
-	private void convert(LatLng sourceLatLng, String coordType, callback) {
+	private void convert(LatLng sourceLatLng, String coordType, CallbackContext callback) {
 		CoordinateConverter converter  = new CoordinateConverter();  
 		converter.from(CoordType.valueOf(coordType));
 		converter.coord(sourceLatLng);
