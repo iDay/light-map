@@ -26,6 +26,7 @@ import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.utils.CoordinateConverter;
 import com.baidu.mapapi.utils.CoordinateConverter.CoordType;
 
+import android.view.ViewGroup;
 import android.app.Activity;
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -67,10 +68,6 @@ public class BaiduMap extends CordovaPlugin {
 				return false;
 			}
 			
-			if (mapView != null) {
-				return false;
-			}
-
 			JSONObject params = args.optJSONObject(0);
 			JSONObject center = params.optJSONObject("center");
 
@@ -109,6 +106,9 @@ public class BaiduMap extends CordovaPlugin {
 			float latitude = (float)params.optDouble("latitude");
 			String type = args.optString(1);
 			convert(new LatLng(latitude, longitude), type, callbackContext);
+		}
+		if ("close".equals(action)) {
+			close();
 		}
 		return true;
 	}
@@ -163,6 +163,14 @@ public class BaiduMap extends CordovaPlugin {
 			@SuppressWarnings("deprecation")
 			@Override
 			public void run() {
+				if (mapView != null) {
+					if (mapView.getParent() == null) {
+						BaiduMap.this.webView.addView(mapView);
+						return;
+					}
+					return;
+				}
+
 				mapView = new MapView(BaiduMap.this.act);
 				mapView.getMap().setMapStatus(
 						MapStatusUpdateFactory.newLatLngZoom(new LatLng(mLat, mLng), mZoom));
@@ -210,6 +218,11 @@ public class BaiduMap extends CordovaPlugin {
 	    result.put("latitude", desLatLng.latitude);
 	    result.put("longitude", desLatLng.longitude);
 		callback.success(result);
+	}
+	
+	private void close() {
+		ViewGroup vg = (ViewGroup)mapView.getParent();
+		vg.removeView(mapView);
 	}
 
 }
