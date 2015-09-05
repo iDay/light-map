@@ -97,6 +97,16 @@ public class BaiduMap extends CordovaPlugin {
 			float zoom = (float)params.optDouble("zoom");
 			mapView.getMap().setMapStatus(MapStatusUpdateFactory.zoomTo(zoom));
 		}
+		if ("convert".equals(action)) {
+			if (args == null) {
+				return false;
+			}
+			JSONObject params = args.optJSONObject(0);
+			float longitude = (float)params.optDouble("longitude");
+			float latitude = (float)params.optDouble("latitude");
+			String type = args.optString(1);
+			convert(new LatLng(latitude, longitude), type, callbackContext);
+		}
 		return true;
 	}
 
@@ -150,7 +160,7 @@ public class BaiduMap extends CordovaPlugin {
 			@Override
 			public void run() {
 				mapView = new MapView(BaiduMap.this.webView
-						.getContext());
+						.getContext().getApplicationContext());
 				mapView.getMap().setMapStatus(
 						MapStatusUpdateFactory.newLatLngZoom(new LatLng(mLat, mLng), mZoom));
 
@@ -185,6 +195,17 @@ public class BaiduMap extends CordovaPlugin {
 		
 		mapView.getMap().addOverlay(new MarkerOptions().position(
 				new LatLng(longitude, latitude)).icon(icon));
+	}
+	
+	private void convert(LatLng sourceLatLng, String coordType, callback) {
+		CoordinateConverter converter  = new CoordinateConverter();  
+		converter.from(CoordType.valueOf(coordType));
+		converter.coord(sourceLatLng);
+		LatLng desLatLng = converter.convert();
+		JSONObject reply = new JSONObject();
+		reply.put("latitude", desLatLng.latitude);
+		reply.put("longitude", desLatLng.longitude);
+		callback.success(reply);
 	}
 
 }

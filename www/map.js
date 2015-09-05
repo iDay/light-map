@@ -23,4 +23,9 @@ baidumap.setZoom = function(options, callback) {
 	}, 'BaiduMap', 'setZoom', [options]);
 };
 
+baidumap.setZoom = function(position, type, callback) {
+	exec(callback, function() {
+	}, 'BaiduMap', 'setZoom', [position, type]);
+};
+
 module.exports = baidumap;
