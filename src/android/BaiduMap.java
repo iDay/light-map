@@ -38,7 +38,6 @@ import android.widget.AbsoluteLayout.LayoutParams;
 public class BaiduMap extends CordovaPlugin {
 	private static final String LOG_TAG = "BaiduMap";
 	private static final boolean DEBUG = true;
-	private Activity act;
 	private static Handler mHandler = new Handler(Looper.getMainLooper());
 	private static MapView mapView;
 	private static LocationClient mLocClient;
@@ -125,7 +124,6 @@ public class BaiduMap extends CordovaPlugin {
 			Log.d(LOG_TAG, String.format("initialize()"));
 		}
 		SDKInitializer.initialize(webView.getContext().getApplicationContext());
-		this.act = cordova.getActivity();
 	}
 
 	public void createMap(String guid, int left, int top, int width,
@@ -166,17 +164,18 @@ public class BaiduMap extends CordovaPlugin {
 				if (mapView != null) {
 					if (mapView.getParent() == null) {
 						BaiduMap.this.webView.addView(mapView);
+						mapView.onResume();
 						return;
 					}
 					return;
 				}
 
-				mapView = new MapView(BaiduMap.this.act);
+				mapView = new MapView(BaiduMap.this.cordova.getActivity());
 				mapView.getMap().setMapStatus(
 						MapStatusUpdateFactory.newLatLngZoom(new LatLng(mLat, mLng), mZoom));
 
 //				float scale = BaiduMap.this.webView.getScale();
-				float scale = BaiduMap.this.act.getResources().getDisplayMetrics().density;
+				float scale = BaiduMap.this.cordova.getActivity().getResources().getDisplayMetrics().density;
 
 				LayoutParams params = new LayoutParams((int) (mWidth * scale),
 						(int) (mHeight * scale), (int) (mLeft * scale),
@@ -221,8 +220,14 @@ public class BaiduMap extends CordovaPlugin {
 	}
 	
 	private void close() {
-		ViewGroup vg = (ViewGroup)mapView.getParent();
-		vg.removeView(mapView);
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				mapView.onPause();
+				ViewGroup vg = (ViewGroup)mapView.getParent();
+				vg.removeView(mapView);
+			}
+		});
 	}
 
 }
