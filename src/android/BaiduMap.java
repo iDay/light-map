@@ -23,7 +23,10 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.utils.CoordinateConverter;
+import com.baidu.mapapi.utils.CoordinateConverter.CoordType;
 
+import android.app.Activity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
@@ -34,11 +37,11 @@ import android.widget.AbsoluteLayout.LayoutParams;
 public class BaiduMap extends CordovaPlugin {
 	private static final String LOG_TAG = "BaiduMap";
 	private static final boolean DEBUG = true;
-
+	private Activity act;
 	private static Handler mHandler = new Handler(Looper.getMainLooper());
 	private static MapView mapView;
 	private static LocationClient mLocClient;
-	private static Map<String, BitmapDescriptor> icons = new HashMap<>();
+	private static Map<String, BitmapDescriptor> icons = new HashMap<String, BitmapDescriptor>();
 
 	private CallbackContext mCallbackContext = null;
 
@@ -122,6 +125,7 @@ public class BaiduMap extends CordovaPlugin {
 			Log.d(LOG_TAG, String.format("initialize()"));
 		}
 		SDKInitializer.initialize(webView.getContext().getApplicationContext());
+		this.act = cordova.getActivity();
 	}
 
 	public void createMap(String guid, int left, int top, int width,
@@ -159,16 +163,16 @@ public class BaiduMap extends CordovaPlugin {
 			@SuppressWarnings("deprecation")
 			@Override
 			public void run() {
-				mapView = new MapView(BaiduMap.this.webView
-						.getContext().getApplicationContext());
+				mapView = new MapView(BaiduMap.this.act);
 				mapView.getMap().setMapStatus(
 						MapStatusUpdateFactory.newLatLngZoom(new LatLng(mLat, mLng), mZoom));
 
 //				float scale = BaiduMap.this.webView.getScale();
+				float scale = BaiduMap.this.act.getResources().getDisplayMetrics().density;
 
-				LayoutParams params = new LayoutParams((int) (mWidth),
-						(int) (mHeight), (int) (mLeft),
-						(int) (mTop));
+				LayoutParams params = new LayoutParams((int) (mWidth * scale),
+						(int) (mHeight * scale), (int) (mLeft * scale),
+						(int) (mTop * scale));
 				mapView.setLayoutParams(params);
 				mapView.showZoomControls(true);
 				BaiduMap.this.webView.addView(mapView);
@@ -197,15 +201,15 @@ public class BaiduMap extends CordovaPlugin {
 				new LatLng(longitude, latitude)).icon(icon));
 	}
 	
-	private void convert(LatLng sourceLatLng, String coordType, CallbackContext callback) {
+	private void convert(LatLng sourceLatLng, String coordType,final CallbackContext callback) throws JSONException {
 		CoordinateConverter converter  = new CoordinateConverter();  
 		converter.from(CoordType.valueOf(coordType));
 		converter.coord(sourceLatLng);
 		LatLng desLatLng = converter.convert();
-		JSONObject reply = new JSONObject();
-		reply.put("latitude", desLatLng.latitude);
-		reply.put("longitude", desLatLng.longitude);
-		callback.success(reply);
+		JSONObject result = new JSONObject();
+	    result.put("latitude", desLatLng.latitude);
+	    result.put("longitude", desLatLng.longitude);
+		callback.success(result);
 	}
 
 }
