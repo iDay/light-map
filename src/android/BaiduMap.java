@@ -154,11 +154,11 @@ public class BaiduMap extends CordovaPlugin {
 				mapView.getMap().setMapStatus(
 						MapStatusUpdateFactory.newLatLngZoom(new LatLng(mLat, mLng), mZoom));
 
-				float scale = BaiduMap.this.webView.getScale();
+//				float scale = BaiduMap.this.webView.getScale();
 
-				LayoutParams params = new LayoutParams((int) (mWidth * scale),
-						(int) (mHeight * scale), (int) (mLeft * scale),
-						(int) (mTop * scale));
+				LayoutParams params = new LayoutParams((int) (mWidth),
+						(int) (mHeight), (int) (mLeft),
+						(int) (mTop));
 				mapView.setLayoutParams(params);
 				mapView.showZoomControls(true);
 				BaiduMap.this.webView.addView(mapView);
