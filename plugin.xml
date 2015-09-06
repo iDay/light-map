@@ -49,11 +49,11 @@
 
         <source-file src="src/android/BaiduMap.java" target-dir="src/com/baidu/light/map" />
         <source-file src="src/android/libs/baidumapapi_v3_5_0.jar" target-dir="libs" />
-        <source-file src="src/android/libs/armeabi/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/armeabi" />
-        <source-file src="src/android/libs/arm64-v8a/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/arm64-v8a" />
-        <source-file src="src/android/libs/armeabi-v7a/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/armeabi-v7a" />
-        <source-file src="src/android/libs/x86/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/x86" />
-        <source-file src="src/android/libs/x86_64/libBaiduMapSDK_v3_5_0_9.so" target-dir="libs/x86_64" />
+        <source-file src="src/android/libs/armeabi/libBaiduMapSDK_v3_5_0_11.so" target-dir="libs/armeabi" />
+        <source-file src="src/android/libs/arm64-v8a/libBaiduMapSDK_v3_5_0_11.so" target-dir="libs/arm64-v8a" />
+        <source-file src="src/android/libs/armeabi-v7a/libBaiduMapSDK_v3_5_0_11.so" target-dir="libs/armeabi-v7a" />
+        <source-file src="src/android/libs/x86/libBaiduMapSDK_v3_5_0_11.so" target-dir="libs/x86" />
+        <source-file src="src/android/libs/x86_64/libBaiduMapSDK_v3_5_0_11.so" target-dir="libs/x86_64" />
     </platform>
 
 </plugin>

@@ -31,6 +31,7 @@ import com.baidu.mapapi.search.geocode.GeoCoder;
 import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
+import com.baidu.mapapi.search.geocode.GeoCodeOption;
 
 import android.view.ViewGroup;
 import android.app.Activity;
@@ -259,9 +260,6 @@ public class BaiduMap extends CordovaPlugin {
 				ViewGroup vg = (ViewGroup)mapView.getParent();
 				if (vg != null) {
 					vg.removeView(mapView);
-				} else {
-					mapView.onDestroy();
-					mapView = null;
 				}
 			}
 		});
@@ -275,13 +273,17 @@ public class BaiduMap extends CordovaPlugin {
 		        if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {  
 		            return;
 		        }  
-		        Latlng latlng = result.getLocation();
-		        JSONObject result = new JSONObject();
-			    result.put("latitude", latlng.latitude);
-			    result.put("longitude", latlng.longitude);
-			    if (callback != null) {
-			    	callback.success(result);
-			    }
+		        LatLng latlng = result.getLocation();
+		        try {
+			        JSONObject position = new JSONObject();
+			        position.put("latitude", latlng.latitude);
+			        position.put("longitude", latlng.longitude);
+				    if (callback != null) {
+				    	callback.success(position);
+				    }
+		        } catch (JSONException e) {
+		        	
+		        }
 		    }  
 		 
 		    @Override  
@@ -296,7 +298,7 @@ public class BaiduMap extends CordovaPlugin {
 		mSearch.setOnGetGeoCodeResultListener(listener);
 		mSearch.geocode(new GeoCodeOption()  
 			    .city(city)  
-			    .address(address);
+			    .address(address));
 		
 		mSearch.destroy();
 	}
