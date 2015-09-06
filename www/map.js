@@ -33,4 +33,14 @@ baidumap.close = function(callback) {
 	}, 'BaiduMap', 'close', []);
 }
 
+baidumap.convert = function(position, callback) {
+	exec(callback, function() {
+	}, 'BaiduMap', 'convert', [position]);
+}
+
+baidumap.revert = function(position, callback) {
+	exec(callback, function() {
+	}, 'BaiduMap', 'revert', [position]);
+}
+
 module.exports = baidumap;

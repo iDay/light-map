@@ -26,6 +26,12 @@ import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.utils.CoordinateConverter;
 import com.baidu.mapapi.utils.CoordinateConverter.CoordType;
 
+import com.baidu.mapapi.search.core.SearchResult;
+import com.baidu.mapapi.search.geocode.GeoCoder;
+import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
+import com.baidu.mapapi.search.geocode.GeoCodeResult;
+import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
+
 import android.view.ViewGroup;
 import android.app.Activity;
 import android.annotation.SuppressLint;
@@ -105,6 +111,15 @@ public class BaiduMap extends CordovaPlugin {
 			float latitude = (float)params.optDouble("latitude");
 			String type = args.optString(1);
 			convert(new LatLng(latitude, longitude), type, callbackContext);
+		}
+		if ("revert".equals(action)) {
+			if (args == null) {
+				return false;
+			}
+			JSONObject params = args.optJSONObject(0);
+			float longitude = (float)params.optDouble("longitude");
+			float latitude = (float)params.optDouble("latitude");
+			revert(new LatLng(latitude, longitude), callbackContext);
 		}
 		if ("close".equals(action)) {
 			close();
@@ -208,15 +223,32 @@ public class BaiduMap extends CordovaPlugin {
 				new LatLng(longitude, latitude)).icon(icon));
 	}
 	
-	private void convert(LatLng sourceLatLng, String coordType,final CallbackContext callback) throws JSONException {
+	private LatLng convert(LatLng sourceLatLng, String coordType,final CallbackContext callback) throws JSONException {
 		CoordinateConverter converter  = new CoordinateConverter();  
 		converter.from(CoordType.valueOf(coordType));
 		converter.coord(sourceLatLng);
 		LatLng desLatLng = converter.convert();
+		
 		JSONObject result = new JSONObject();
 	    result.put("latitude", desLatLng.latitude);
 	    result.put("longitude", desLatLng.longitude);
-		callback.success(result);
+	    if (callback != null) {
+	    	callback.success(result);
+	    }
+		return desLatLng;
+	}
+	
+	private void revert(LatLng sourceLatLng, final CallbackContext callback) throws JSONException {
+		LatLng midLatlng = convert(sourceLatLng, "GPS", null);
+		float latitude = (float)(sourceLatLng.latitude * 2 - midLatlng.latitude);
+		float longitude = (float)(sourceLatLng.longitude * 2 - midLatlng.longitude);
+
+		JSONObject result = new JSONObject();
+	    result.put("latitude", latitude);
+	    result.put("longitude", longitude);
+	    if (callback != null) {
+	    	callback.success(result);
+	    }
 	}
 	
 	private void close() {
@@ -225,9 +257,48 @@ public class BaiduMap extends CordovaPlugin {
 			public void run() {
 				mapView.onPause();
 				ViewGroup vg = (ViewGroup)mapView.getParent();
-				vg.removeView(mapView);
+				if (vg != null) {
+					vg.removeView(mapView);
+				} else {
+					mapView.onDestroy();
+					mapView = null;
+				}
 			}
 		});
+	}
+	
+	private void geocode(String address, String city, final CallbackContext callback) throws JSONException {
+		GeoCoder mSearch = GeoCoder.newInstance();
+		
+		OnGetGeoCoderResultListener listener = new OnGetGeoCoderResultListener() {  
+		    public void onGetGeoCodeResult(GeoCodeResult result) {  
+		        if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {  
+		            return;
+		        }  
+		        Latlng latlng = result.getLocation();
+		        JSONObject result = new JSONObject();
+			    result.put("latitude", latlng.latitude);
+			    result.put("longitude", latlng.longitude);
+			    if (callback != null) {
+			    	callback.success(result);
+			    }
+		    }  
+		 
+		    @Override  
+		    public void onGetReverseGeoCodeResult(ReverseGeoCodeResult result) {  
+		        if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {  
+		            //没有找到检索结果  
+		        }  
+		        //获取反向地理编码结果  
+		    }  
+		};
+		
+		mSearch.setOnGetGeoCodeResultListener(listener);
+		mSearch.geocode(new GeoCodeOption()  
+			    .city(city)  
+			    .address(address);
+		
+		mSearch.destroy();
 	}
 
 }
