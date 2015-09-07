@@ -256,10 +256,12 @@ public class BaiduMap extends CordovaPlugin {
 		mHandler.post(new Runnable() {
 			@Override
 			public void run() {
-				mapView.onPause();
-				ViewGroup vg = (ViewGroup)mapView.getParent();
-				if (vg != null) {
-					vg.removeView(mapView);
+				if (mapView != null) {
+					mapView.onPause();
+					ViewGroup vg = (ViewGroup)mapView.getParent();
+					if (vg != null) {
+						vg.removeView(mapView);
+					}
 				}
 			}
 		});
