@@ -5,16 +5,20 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
+import java.io.InputStream;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
+import org.apache.cordova.PluginResult;
+import org.apache.cordova.PluginResult.Status;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.map.MarkerOptions;
@@ -32,6 +36,8 @@ import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
 import com.baidu.mapapi.search.geocode.GeoCodeResult;
 import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
 import com.baidu.mapapi.search.geocode.GeoCodeOption;
+import com.baidu.mapapi.map.MapViewLayoutParams;
+import com.baidu.mapapi.map.MapViewLayoutParams.Builder;
 
 import android.view.ViewGroup;
 import android.app.Activity;
@@ -41,8 +47,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.AbsoluteLayout.LayoutParams;
+import android.widget.ImageView;
+import android.graphics.drawable.Drawable;
+import android.graphics.Point;
 
-public class BaiduMap extends CordovaPlugin {
+public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.BaiduMap.OnMapStatusChangeListener {
 	private static final String LOG_TAG = "BaiduMap";
 	private static final boolean DEBUG = true;
 	private static Handler mHandler = new Handler(Looper.getMainLooper());
@@ -85,8 +94,7 @@ public class BaiduMap extends CordovaPlugin {
 			int zoom = params.optInt("zoom");
 			createMap(guid, left, top, width, height, (float) center.optDouble("longitude"), (float) center.optDouble("latitude"), zoom);
 			mCallbackContext = callbackContext;
-		}
-		if ("setCenter".equals(action)) {
+		} else if ("setCenter".equals(action)) {
 			if (args == null) {
 				return false;
 			}
@@ -94,16 +102,14 @@ public class BaiduMap extends CordovaPlugin {
 			float longitude = (float)params.optDouble("longitude");
 			float latitude = (float)params.optDouble("latitude");
 			mapView.getMap().setMapStatus(MapStatusUpdateFactory.newLatLng(new LatLng(latitude, longitude)));
-		}
-		if ("setZoom".equals(action)) {
+		} else if ("setZoom".equals(action)) {
 			if (args == null) {
 				return false;
 			}
 			JSONObject params = args.optJSONObject(0);
 			float zoom = (float)params.optDouble("zoom");
 			mapView.getMap().setMapStatus(MapStatusUpdateFactory.zoomTo(zoom));
-		}
-		if ("convert".equals(action)) {
+		} else if ("convert".equals(action)) {
 			if (args == null) {
 				return false;
 			}
@@ -112,8 +118,7 @@ public class BaiduMap extends CordovaPlugin {
 			float latitude = (float)params.optDouble("latitude");
 			String type = args.optString(1);
 			convert(new LatLng(latitude, longitude), type, callbackContext);
-		}
-		if ("revert".equals(action)) {
+		} else if ("revert".equals(action)) {
 			if (args == null) {
 				return false;
 			}
@@ -121,10 +126,25 @@ public class BaiduMap extends CordovaPlugin {
 			float longitude = (float)params.optDouble("longitude");
 			float latitude = (float)params.optDouble("latitude");
 			revert(new LatLng(latitude, longitude), callbackContext);
-		}
-		if ("close".equals(action)) {
+		} else if ("close".equals(action)) {
 			close();
-		}
+	    } else if ("getZoom".equals(action)) {
+	    	getZoom(callbackContext);
+	    } else if ("addMarker".equals(action)) {
+	    	if (args == null) {
+				return false;
+			}
+			JSONObject params = args.optJSONObject(0);
+			addMarker(params);
+	    } else if ("addImage".equals(action)) {
+	    	if (args == null) {
+				return false;
+			}
+	    	JSONObject params = args.optJSONObject(0);
+			addImage(params);
+	    } else if ("clearMarker".equals(action)) {
+	    	clearMarker();
+	    }
 		return true;
 	}
 
@@ -199,6 +219,9 @@ public class BaiduMap extends CordovaPlugin {
 				mapView.setLayoutParams(params);
 				mapView.showZoomControls(true);
 				BaiduMap.this.webView.addView(mapView);
+				mapView.getMap().setOnMapStatusChangeListener(BaiduMap.this);
+				
+				mCallbackContext.success();
 			}
 
 		}.config(guid, left, top, width, height, lng, lat, zoom));
@@ -216,12 +239,12 @@ public class BaiduMap extends CordovaPlugin {
 		if (icons.get(iconPath) != null) {
 			icon = icons.get(iconPath);
 		} else {
-			icon = BitmapDescriptorFactory.fromPath(iconPath);
+			icon = BitmapDescriptorFactory.fromAsset(iconPath);
 			icons.put(iconPath, icon);
 		}
 		
 		mapView.getMap().addOverlay(new MarkerOptions().position(
-				new LatLng(longitude, latitude)).icon(icon));
+				new LatLng(latitude, longitude)).icon(icon));
 	}
 	
 	private LatLng convert(LatLng sourceLatLng, String coordType,final CallbackContext callback) throws JSONException {
@@ -304,5 +327,72 @@ public class BaiduMap extends CordovaPlugin {
 		
 		mSearch.destroy();
 	}
+	
+	public void addView() {
+		
+	}
+	
+	/** 
+    * 手势操作地图，设置地图状态等操作导致地图状态开始改变。 
+    * @param status 地图状态改变开始时的地图状态 
+    */  
+    public void onMapStatusChangeStart(MapStatus status){  
+    }  
+    /** 
+    * 地图状态变化中 
+    * @param status 当前地图状态 
+    */  
+    public void onMapStatusChange(MapStatus status){  
+    }  
+    /** 
+    * 地图状态改变结束 
+    * @param status 地图状态改变结束后的地图状态 
+    */  
+    public void onMapStatusChangeFinish(MapStatus status){
+		LatLng latlng = status.target;
+		final String receiveHook = "light.map.onMapStatusChange({latitude:" + 
+        latlng.latitude + ",longitude:" + latlng.longitude + "})";
+        cordova.getActivity().runOnUiThread(new Runnable() {
 
+			@Override
+			public void run() {
+				BaiduMap.this.webView.loadUrl("javascript:" + receiveHook);
+			}
+			
+		});
+    }
+    
+    private void getZoom(final CallbackContext callback) {
+    	float zoom = mapView.getMap().getMapStatus().zoom;
+    	callback.success((int)zoom);
+    }
+    
+    private void addImage(JSONObject params) {
+    	float scale = BaiduMap.this.cordova.getActivity().getResources().getDisplayMetrics().density;
+    	final int width = (int)(params.optInt("width") * scale);
+    	final int height = (int)(params.optInt("height") * scale);
+    	final int left = (int)(params.optInt("left") * scale);
+    	final int top = (int)(params.optInt("top") * scale);
+		final String imagePath = params.optString("image");
+		mHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				try {
+			    	ImageView imageView = new ImageView(BaiduMap.this.cordova.getActivity());
+			    	InputStream is = cordova.getActivity().getAssets().open(imagePath);  
+			    	Drawable drawable = Drawable.createFromStream(is, null);
+			    	imageView.setImageDrawable(drawable);
+//			    	BaiduMap.this.webView.addView(imageView);
+			    	MapViewLayoutParams.Builder lm = new MapViewLayoutParams.Builder();
+			    	lm.align(MapViewLayoutParams.ALIGN_CENTER_HORIZONTAL, MapViewLayoutParams.ALIGN_CENTER_VERTICAL)
+			    	.width(width).height(height).point(new Point(top, left));
+			    	mapView.addView(imageView, lm.build());
+//			    	mapView.refreshDrawableState();
+		    	} catch(Exception e) {
+		    		e.printStackTrace();
+		    	}
+			}
+		});
+    }
+    
 }

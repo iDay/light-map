@@ -23,11 +23,6 @@ baidumap.setZoom = function(options, callback) {
 	}, 'BaiduMap', 'setZoom', [options]);
 };
 
-baidumap.setZoom = function(position, type, callback) {
-	exec(callback, function() {
-	}, 'BaiduMap', 'setZoom', [position, type]);
-};
-
 baidumap.close = function(callback) {
 	exec(callback, function() {
 	}, 'BaiduMap', 'close', []);
@@ -41,6 +36,26 @@ baidumap.convert = function(position, callback) {
 baidumap.revert = function(position, callback) {
 	exec(callback, function() {
 	}, 'BaiduMap', 'revert', [position]);
+}
+
+baidumap.getZoom = function(callback) {
+	exec(callback, function() {
+	}, 'BaiduMap', 'getZoom', []);
+}
+
+baidumap.addMarker = function(marker) {
+	exec(null, function() {
+	}, 'BaiduMap', 'addMarker', [marker]);
+}
+
+baidumap.addImage = function(image) {
+	exec(null, function() {
+	}, 'BaiduMap', 'addImage', [image]);
+}
+
+baidumap.clearMarker = function(callback) {
+	exec(callback, function() {
+	}, 'BaiduMap', 'clearMarker', []);
 }
 
 module.exports = baidumap;
