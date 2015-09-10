@@ -30,12 +30,6 @@ import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.utils.CoordinateConverter;
 import com.baidu.mapapi.utils.CoordinateConverter.CoordType;
 
-import com.baidu.mapapi.search.core.SearchResult;
-import com.baidu.mapapi.search.geocode.GeoCoder;
-import com.baidu.mapapi.search.geocode.OnGetGeoCoderResultListener;
-import com.baidu.mapapi.search.geocode.GeoCodeResult;
-import com.baidu.mapapi.search.geocode.ReverseGeoCodeResult;
-import com.baidu.mapapi.search.geocode.GeoCodeOption;
 import com.baidu.mapapi.map.MapViewLayoutParams;
 import com.baidu.mapapi.map.MapViewLayoutParams.Builder;
 
@@ -144,11 +138,6 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 			addImage(params);
 	    } else if ("clearMarker".equals(action)) {
 	    	clearMarker();
-	    } else if ("geocode".equals(action)) {
-	    	JSONObject params = args.optJSONObject(0);
-	    	String address = params.optString("address");
-	    	String city = params.optString("city");
-	    	geocode(address, city, callbackContext);
 	    }
 		return true;
 	}
