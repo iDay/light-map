@@ -306,7 +306,8 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
     public void onMapStatusChangeFinish(MapStatus status){
 		LatLng latlng = status.target;
 		final String receiveHook = "light.map.onMapStatusChange({latitude:" + 
-        latlng.latitude + ",longitude:" + latlng.longitude + "})";
+				latlng.latitude + ",longitude:" + latlng.longitude + ", zoom: " + 
+				status.zoom + "})";
 		if (BaiduMap.this.cordova == null) {
 			return;
 		}
