@@ -144,6 +144,11 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 			addImage(params);
 	    } else if ("clearMarker".equals(action)) {
 	    	clearMarker();
+	    } else if ("geocode".equals(action)) {
+	    	JSONObject params = args.optJSONObject(0);
+	    	String address = params.optString("address");
+	    	String city = params.optString("city");
+	    	geocode(address, city, callbackContext);
 	    }
 		return true;
 	}
@@ -221,7 +226,10 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 				BaiduMap.this.webView.addView(mapView);
 				mapView.getMap().setOnMapStatusChangeListener(BaiduMap.this);
 				
-				mCallbackContext.success();
+				if (mCallbackContext != null) {
+					mCallbackContext.success();
+					mCallbackContext = null;
+				}
 			}
 
 		}.config(guid, left, top, width, height, lng, lat, zoom));
@@ -290,48 +298,6 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 		});
 	}
 	
-	private void geocode(String address, String city, final CallbackContext callback) throws JSONException {
-		GeoCoder mSearch = GeoCoder.newInstance();
-		
-		OnGetGeoCoderResultListener listener = new OnGetGeoCoderResultListener() {  
-		    public void onGetGeoCodeResult(GeoCodeResult result) {  
-		        if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {  
-		            return;
-		        }  
-		        LatLng latlng = result.getLocation();
-		        try {
-			        JSONObject position = new JSONObject();
-			        position.put("latitude", latlng.latitude);
-			        position.put("longitude", latlng.longitude);
-				    if (callback != null) {
-				    	callback.success(position);
-				    }
-		        } catch (JSONException e) {
-		        	
-		        }
-		    }  
-		 
-		    @Override  
-		    public void onGetReverseGeoCodeResult(ReverseGeoCodeResult result) {  
-		        if (result == null || result.error != SearchResult.ERRORNO.NO_ERROR) {  
-		            //没有找到检索结果  
-		        }  
-		        //获取反向地理编码结果  
-		    }  
-		};
-		
-		mSearch.setOnGetGeoCodeResultListener(listener);
-		mSearch.geocode(new GeoCodeOption()  
-			    .city(city)  
-			    .address(address));
-		
-		mSearch.destroy();
-	}
-	
-	public void addView() {
-		
-	}
-	
 	/** 
     * 手势操作地图，设置地图状态等操作导致地图状态开始改变。 
     * @param status 地图状态改变开始时的地图状态 
@@ -352,7 +318,10 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 		LatLng latlng = status.target;
 		final String receiveHook = "light.map.onMapStatusChange({latitude:" + 
         latlng.latitude + ",longitude:" + latlng.longitude + "})";
-        cordova.getActivity().runOnUiThread(new Runnable() {
+		if (BaiduMap.this.cordova == null) {
+			return;
+		}
+		BaiduMap.this.cordova.getActivity().runOnUiThread(new Runnable() {
 
 			@Override
 			public void run() {
