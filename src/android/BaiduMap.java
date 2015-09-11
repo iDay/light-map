@@ -20,8 +20,11 @@ import org.json.JSONObject;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.BaiduMap.OnMarkerClickListener;
+import com.baidu.mapapi.map.BaiduMap.OnMapStatusChangeListener;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.BitmapDescriptor;
@@ -33,6 +36,7 @@ import com.baidu.mapapi.utils.CoordinateConverter.CoordType;
 import com.baidu.mapapi.map.MapViewLayoutParams;
 import com.baidu.mapapi.map.MapViewLayoutParams.Builder;
 
+import android.view.View;
 import android.view.ViewGroup;
 import android.app.Activity;
 import android.annotation.SuppressLint;
@@ -41,17 +45,21 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.AbsoluteLayout.LayoutParams;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.graphics.drawable.Drawable;
 import android.graphics.Point;
 
-public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.BaiduMap.OnMapStatusChangeListener {
+
+public class BaiduMap extends CordovaPlugin implements OnMapStatusChangeListener, OnMarkerClickListener {
 	private static final String LOG_TAG = "BaiduMap";
 	private static final boolean DEBUG = true;
 	private static Handler mHandler = new Handler(Looper.getMainLooper());
 	private static MapView mapView;
 	private static LocationClient mLocClient;
 	private static Map<String, BitmapDescriptor> icons = new HashMap<String, BitmapDescriptor>();
+	private static Map<String, Marker> markers = new HashMap<String, Marker>();
 
 	private CallbackContext mCallbackContext = null;
 
@@ -214,6 +222,7 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 				mapView.showZoomControls(true);
 				BaiduMap.this.webView.addView(mapView);
 				mapView.getMap().setOnMapStatusChangeListener(BaiduMap.this);
+				mapView.getMap().setOnMarkerClickListener(BaiduMap.this);
 				
 				if (mCallbackContext != null) {
 					mCallbackContext.success();
@@ -225,6 +234,7 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 	}
 
 	private void clearMarker() {
+		markers.clear();
 		mapView.getMap().clear();
 	}
 
@@ -232,6 +242,7 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 		float longitude = (float)params.optDouble("longitude");
 		float latitude = (float)params.optDouble("latitude");
 		String iconPath = params.optString("icon");
+		String id = params.optString("id");
 		BitmapDescriptor icon;
 		if (icons.get(iconPath) != null) {
 			icon = icons.get(iconPath);
@@ -240,8 +251,9 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 			icons.put(iconPath, icon);
 		}
 		
-		mapView.getMap().addOverlay(new MarkerOptions().position(
+		Marker marker = (Marker)mapView.getMap().addOverlay(new MarkerOptions().position(
 				new LatLng(latitude, longitude)).icon(icon));
+		markers.put(id, marker);
 	}
 	
 	private LatLng convert(LatLng sourceLatLng, String coordType,final CallbackContext callback) throws JSONException {
@@ -333,6 +345,7 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
     	final int left = (int)(params.optInt("left") * scale);
     	final int top = (int)(params.optInt("top") * scale);
 		final String imagePath = params.optString("image");
+		final boolean clickable = params.optBoolean("clickable");
 		mHandler.post(new Runnable() {
 			@Override
 			public void run() {
@@ -341,10 +354,19 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 			    	InputStream is = cordova.getActivity().getAssets().open(imagePath);  
 			    	Drawable drawable = Drawable.createFromStream(is, null);
 			    	imageView.setImageDrawable(drawable);
+					if (clickable) {
+						imageView.setOnClickListener(new View.OnClickListener() {
+							
+							@Override
+							public void onClick(View view) {
+								BaiduMap.this.webView.loadUrl("javascript:light.map.onImageClick('" + imagePath + "')");
+							}
+						});
+					}
 //			    	BaiduMap.this.webView.addView(imageView);
 			    	MapViewLayoutParams.Builder lm = new MapViewLayoutParams.Builder();
 			    	lm.align(MapViewLayoutParams.ALIGN_CENTER_HORIZONTAL, MapViewLayoutParams.ALIGN_CENTER_VERTICAL)
-			    	.width(width).height(height).point(new Point(top, left));
+			    	.width(width).height(height).point(new Point(left, top));
 			    	mapView.addView(imageView, lm.build());
 //			    	mapView.refreshDrawableState();
 		    	} catch(Exception e) {
@@ -352,6 +374,28 @@ public class BaiduMap extends CordovaPlugin implements com.baidu.mapapi.map.Baid
 		    	}
 			}
 		});
+    }
+    
+    public boolean onMarkerClick(final Marker marker) {
+		if (BaiduMap.this.cordova == null) {
+			return false;
+		}
+		BaiduMap.this.cordova.getActivity().runOnUiThread(new Runnable() {
+
+			@Override
+			public void run() {
+		    	String id = null;
+		    	for (Map.Entry<String, Marker> entry : BaiduMap.this.markers.entrySet()) {
+					if (entry.getValue().equals(marker)) {
+						id = entry.getKey();
+						break;
+					}
+				}
+				BaiduMap.this.webView.loadUrl("javascript:light.map.onMarkerClick('" + id + "')");
+			}
+			
+		});
+		return true;
     }
     
 }
