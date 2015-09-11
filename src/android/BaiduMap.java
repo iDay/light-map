@@ -359,6 +359,9 @@ public class BaiduMap extends CordovaPlugin implements OnMapStatusChangeListener
 							
 							@Override
 							public void onClick(View view) {
+								if (BaiduMap.this.cordova == null) {
+									return;
+								}
 								BaiduMap.this.webView.loadUrl("javascript:light.map.onImageClick('" + imagePath + "')");
 							}
 						});
