@@ -403,17 +403,17 @@ public class BaiduMap extends CordovaPlugin implements OnMapStatusChangeListener
     
     @Override
     public void onPause(boolean multitasking) {
-      if (mapView != null) {
-        mapView.onPause();
-      }
+//      if (mapView != null) {
+//        mapView.onPause();
+//      }
       super.onPause(multitasking);
     }
 
     @Override
     public void onResume(boolean multitasking) {
-      if (mapView != null) {
-        mapView.onResume();
-      }
+//      if (mapView != null) {
+//        mapView.onResume();
+//      }
       super.onResume(multitasking);
     }
 
