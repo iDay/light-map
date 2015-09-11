@@ -54,6 +54,9 @@
         <source-file src="src/android/libs/armeabi-v7a/libBaiduMapSDK_v3_5_0_11.so" target-dir="libs/armeabi-v7a" />
         <source-file src="src/android/libs/x86/libBaiduMapSDK_v3_5_0_11.so" target-dir="libs/x86" />
         <source-file src="src/android/libs/x86_64/libBaiduMapSDK_v3_5_0_11.so" target-dir="libs/x86_64" />
+        <asset src="www/locate.png" target="locate.png" />
+        <asset src="www/place.png" target="place.png" />
+        <asset src="www/point.png" target="point.png" />
     </platform>
 
 </plugin>
