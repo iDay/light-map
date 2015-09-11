@@ -419,9 +419,12 @@ public class BaiduMap extends CordovaPlugin implements OnMapStatusChangeListener
 
     @Override
     public void onDestroy() {
+    	Log.i(LOG_TAG, "map destroyed");
       if (mapView != null) {
-        mapView.onDestroy();
-        mapView = null;
+    	  clearMarker();
+    	  icons.clear();
+    	  mapView.onDestroy();
+    	  mapView = null;
       }
       super.onDestroy();
     }
