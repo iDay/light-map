@@ -219,7 +219,8 @@ public class BaiduMap extends CordovaPlugin implements OnMapStatusChangeListener
 						(int) (mHeight * scale), (int) (mLeft * scale),
 						(int) (mTop * scale));
 				mapView.setLayoutParams(params);
-				mapView.showZoomControls(true);
+				mapView.showZoomControls(false);
+				mapView.showScaleControl(false);
 				BaiduMap.this.webView.addView(mapView);
 				mapView.getMap().setOnMapStatusChangeListener(BaiduMap.this);
 				mapView.getMap().setOnMarkerClickListener(BaiduMap.this);
@@ -403,17 +404,17 @@ public class BaiduMap extends CordovaPlugin implements OnMapStatusChangeListener
     
     @Override
     public void onPause(boolean multitasking) {
-//      if (mapView != null) {
-//        mapView.onPause();
-//      }
+      if (mapView != null) {
+        mapView.onPause();
+      }
       super.onPause(multitasking);
     }
 
     @Override
     public void onResume(boolean multitasking) {
-//      if (mapView != null) {
-//        mapView.onResume();
-//      }
+      if (mapView != null) {
+        mapView.onResume();
+      }
       super.onResume(multitasking);
     }
 
