@@ -390,7 +390,9 @@ public class BaiduMap extends CordovaPlugin implements OnMapStatusChangeListener
 			public void run() {
 		    	String id = null;
 		    	for (Map.Entry<String, Marker> entry : BaiduMap.this.markers.entrySet()) {
-					if (entry.getValue().equals(marker)) {
+		    		Marker m = entry.getValue();
+					if (m.getPosition().latitude == marker.getPosition().latitude
+							&& m.getPosition().longitude == marker.getPosition().longitude) {
 						id = entry.getKey();
 						break;
 					}
